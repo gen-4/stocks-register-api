@@ -1,0 +1,23 @@
+services:
+  relational_db:
+    container_name: stocks_relational_db
+    image: postgres
+    
+    environment:
+      POSTGRES_DB: "stocks_register"
+      POSTGRES_USER: "stock_m"
+      POSTGRES_PASSWORD: "1234"
+
+    ports:
+      - 5432:5432
+
+  no-sql_db:
+    container_name: no-sql_stocks
+    image: mongo
+
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: stock_m
+      MONGO_INITDB_ROOT_PASSWORD: 1234
+
+    ports:
+      - 27017:27017
