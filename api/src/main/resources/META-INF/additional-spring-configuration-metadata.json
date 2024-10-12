@@ -1,5 +1,0 @@
-{"properties": [{
-  "name": "application.env",
-  "type": "java.lang.String",
-  "description": "Environment where the app is running"
-}]}

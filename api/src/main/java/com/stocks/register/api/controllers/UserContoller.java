@@ -14,9 +14,9 @@ public class UserContoller {
     @Autowired
     private Environment env;
 
-    @GetMapping("/api")
+    @GetMapping("/")
     public String getHelp() {
-        return env.getProperty("application.env");
+        return String.join(", ", env.getActiveProfiles());
     }
 
 }
