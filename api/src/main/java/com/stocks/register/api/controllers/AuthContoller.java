@@ -39,14 +39,8 @@ public class AuthContoller {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponseDto> login(
         @RequestBody AuthenticationRequestDto request
-    ) throws NotFoundException {
+    ) throws WrongParametersException, NotFoundException {
         return ResponseEntity.ok(authenticationService.login(request));
     }
-
-    @GetMapping("/hello")
-    public String getMethodName() throws NotFoundException {
-        throw new NotFoundException("nothing", "Lo que me cuelga de aqui");
-    }
-    
 
 }

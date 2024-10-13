@@ -47,7 +47,8 @@ public class ApplicationConfig {
     @SuppressWarnings("deprecation")
     @Bean
     public PasswordEncoder passwordEncoder() {
-        if (env.getProperty("application.env").equals("dev")) {
+        String profile = env.getProperty("application.env");
+        if (profile.equals("dev") || profile.equals("test")) {
             return NoOpPasswordEncoder.getInstance();
         }
         return new BCryptPasswordEncoder();

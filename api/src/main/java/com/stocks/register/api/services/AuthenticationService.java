@@ -4,11 +4,10 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.List;
 
-import java.sql.Timestamp;
-
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -51,23 +50,29 @@ public class AuthenticationService {
 
     public AuthenticationResponseDto register(RegisterRequestDto request) 
         throws NotFoundException, WrongParametersException {
+        User user;
         Optional<Role> userRole = roleRepository.findByRole(RoleOptions.USER);
         if (!userRole.isPresent()) {
             throw new NotFoundException("Role", RoleOptions.USER.name());
         }
 
-        User user = User.builder()
-            .username(request.getUsername())
-            .email(request.getEmail())
-            .password(passwordEncoder.encode(request.getPassword()))
-            .registerDate(new Timestamp(System.currentTimeMillis()))
-            .roles(List.of(userRole.get()))
-            .build();
-        
         try {
+            user = User.builder()
+                .username(request.getUsername())
+                .email(request.getEmail())
+                .password(passwordEncoder.encode(request.getPassword()))
+                .registerDate(new Timestamp(System.currentTimeMillis()))
+                .roles(List.of(userRole.get()))
+                .build();
+        
             userRepository.save(user);
+            
         } catch (DataIntegrityViolationException e) {
-            throw new WrongParametersException("User");
+            throw new WrongParametersException("User Register Request");
+        } catch (IllegalArgumentException e) {
+            throw new WrongParametersException("User Register Request");
+        } catch (NullPointerException e) {
+            throw new WrongParametersException("User Register Request");
         }
 
         String token = jwtService.generateToken(user);
@@ -77,18 +82,22 @@ public class AuthenticationService {
             .build();
     }
 
-    public AuthenticationResponseDto login(AuthenticationRequestDto request) throws NotFoundException {
+    public AuthenticationResponseDto login(AuthenticationRequestDto request) throws NotFoundException, WrongParametersException {
         String email = request.getEmail();
         Optional<User> optionalUser;
         User user;
         String token;
 
-        authenticationManager.authenticate(
-            new UsernamePasswordAuthenticationToken(
-                email,
-                request.getPassword()
-            )
-        );
+        try {
+            authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                    email,
+                    request.getPassword()
+                )
+            );
+        } catch (BadCredentialsException e) {
+            throw new WrongParametersException("User Authentication Request");
+        }
 
         optionalUser = userRepository.findByEmail(email);
         if (!optionalUser.isPresent()) {
