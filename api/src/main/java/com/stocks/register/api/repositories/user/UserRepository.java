@@ -10,7 +10,7 @@ import com.stocks.register.api.models.user.User;
 
 
 
-public interface UserRepository extends JpaRepository<User, Integer> {
+public interface UserRepository extends JpaRepository<User, Long> {
 
     public Optional<User> findByEmail(String email);
 

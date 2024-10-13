@@ -2,6 +2,7 @@ package com.stocks.register.api.admin;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Timestamp;
@@ -18,6 +19,8 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
 import com.stocks.register.api.dtos.user.UserDto;
+import com.stocks.register.api.exceptions.NotFoundException;
+import com.stocks.register.api.exceptions.TryingToBanAdminException;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.RoleOptions;
 import com.stocks.register.api.models.user.User;
@@ -44,6 +47,8 @@ class AdminServiceTests {
 	@Autowired
 	private RoleRepository roleRepository;
 
+	private static final long UNEXISTENT_ID = -1;
+
 	private static final String adminEmail = "admin@example.com";
 	private static final String adminPassword = "1234admin";
 	private static final String adminUsername = "admin";
@@ -51,6 +56,9 @@ class AdminServiceTests {
 	private static final String userEmail = "user@example.com";
 	private static final String userPassword = "1234user";
 	private static final String userUsername = "user";
+
+	private User userUser;
+	private User adminUser;
 
 	@BeforeAll
 	void checkTestEnv() {
@@ -68,7 +76,7 @@ class AdminServiceTests {
 			.build()
 		);
 
-		User adminUser = User.builder()
+		adminUser = User.builder()
 			.email(adminEmail)
 			.password(adminPassword)
 			.username(adminUsername)
@@ -76,7 +84,7 @@ class AdminServiceTests {
 			.roles(List.of(userRole, adminRole))
 			.build();
 
-		User userUser = User.builder()
+		userUser = User.builder()
 			.email(userEmail)
 			.password(userPassword)
 			.username(userUsername)
@@ -107,6 +115,23 @@ class AdminServiceTests {
         List<UserDto> users = adminService.getAll();
 
         assertTrue(users.isEmpty());
+    }
+
+	@Test
+    public void banUser() throws NotFoundException, TryingToBanAdminException {
+        adminService.banUser(userUser.getId());
+
+        assertTrue(userRepository.findById(userUser.getId()).get().isBanned());
+    }
+
+	@Test
+    public void banUserThrowsNotFoundException() throws NotFoundException, TryingToBanAdminException {
+        assertThrows(NotFoundException.class, () -> adminService.banUser(UNEXISTENT_ID));
+    }
+
+	@Test
+    public void banUserThrowsTryingToBanAdminException() throws NotFoundException, TryingToBanAdminException {
+        assertThrows(TryingToBanAdminException.class, () -> adminService.banUser(adminUser.getId()));
     }
 
 }

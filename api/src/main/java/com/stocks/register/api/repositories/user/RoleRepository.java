@@ -7,7 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.RoleOptions;
 
-public interface RoleRepository extends JpaRepository<Role, Integer> {
+public interface RoleRepository extends JpaRepository<Role, Long> {
 
     public Optional<Role> findByRole(RoleOptions role);
     

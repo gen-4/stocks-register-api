@@ -101,5 +101,15 @@ public class User implements UserDetails {
 	public boolean isEnabled() {
 		return true;
 	}
+
+    public boolean hasRole(RoleOptions roleOptions) {
+        for (Role role: roles) {
+            if (role.getRole().equals(roleOptions)) {
+                return true;
+            }
+        }
+
+        return false;
+    } 
     
 }

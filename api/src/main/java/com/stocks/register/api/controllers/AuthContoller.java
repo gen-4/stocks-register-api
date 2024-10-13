@@ -16,7 +16,6 @@ import com.stocks.register.api.services.AuthenticationService;
 import com.stocks.register.api.dtos.auth.AuthenticationRequestDto;
 
 import lombok.RequiredArgsConstructor;
-import org.springframework.web.bind.annotation.GetMapping;
 
 
 
