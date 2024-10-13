@@ -1,8 +1,10 @@
 package com.stocks.register.api.configuration;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.env.Environment;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.AuthenticationProvider;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
@@ -10,15 +12,19 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
+import org.springframework.security.crypto.password.NoOpPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
-import com.stocks.register.api.repositories.UserRepository;
+import com.stocks.register.api.repositories.user.UserRepository;
 
 import lombok.RequiredArgsConstructor;
 
 @Configuration
 @RequiredArgsConstructor
 public class ApplicationConfig {
+
+    @Autowired
+    private final Environment env;
 
     @Autowired
     private  final UserRepository userRepository;
@@ -38,8 +44,12 @@ public class ApplicationConfig {
         return authProvider;
     }
 
+    @SuppressWarnings("deprecation")
     @Bean
     public PasswordEncoder passwordEncoder() {
+        if (env.getProperty("application.env").equals("dev")) {
+            return NoOpPasswordEncoder.getInstance();
+        }
         return new BCryptPasswordEncoder();
     }
 

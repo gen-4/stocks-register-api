@@ -1,9 +1,11 @@
 package com.stocks.register.api.exceptions;
 
-public class NotFoundException extends Exception {
+public class NotFoundException extends GlobalException {
+
+    private static final String code = "exception.id.not_found";
 
     public NotFoundException(String entity, String criteria) {
-        super("Error: " + entity + ": " + criteria + " not found!");
+        super(code, "Error: " + entity + " -> " + criteria + " not found!");
     }
     
 }

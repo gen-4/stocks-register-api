@@ -6,13 +6,13 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 import org.hibernate.annotations.ColumnDefault;
-import org.hibernate.annotations.EmbeddableInstantiator;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
@@ -36,7 +36,7 @@ public class User implements UserDetails {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
+    private long id;
 
     @Column(nullable = false)
     private String username;
@@ -60,7 +60,7 @@ public class User implements UserDetails {
     @Column(nullable = false)
     private boolean isEnabled;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     private List<Role> roles;
     
 

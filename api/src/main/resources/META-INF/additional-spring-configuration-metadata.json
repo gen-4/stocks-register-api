@@ -1,0 +1,19 @@
+{
+  "properties": [
+    {
+      "name": "application.env",
+      "type": "java.lang.String",
+      "description": "Execution environment"
+    },
+    {
+      "name": "security.jwt.expiration-time",
+      "type": "java.lang.String",
+      "description": "Jwt token expiration time in milliseconds"
+    },
+    {
+      "name": "security.jwt.secret-key",
+      "type": "java.lang.String",
+      "description": "Jwt token creation key"
+    }
+  ]
+}

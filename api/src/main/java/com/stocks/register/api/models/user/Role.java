@@ -27,7 +27,7 @@ public class Role {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE)
-    private Integer id;
+    private long id;
     
     @Column(nullable = false)
     @Enumerated(EnumType.STRING)

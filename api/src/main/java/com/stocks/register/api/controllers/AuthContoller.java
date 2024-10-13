@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RestController;
 import com.stocks.register.api.dtos.auth.AuthenticationResponseDto;
 import com.stocks.register.api.dtos.auth.RegisterRequestDto;
 import com.stocks.register.api.exceptions.NotFoundException;
+import com.stocks.register.api.exceptions.WrongParametersException;
 import com.stocks.register.api.services.AuthenticationService;
 import com.stocks.register.api.dtos.auth.AuthenticationRequestDto;
 
@@ -31,7 +32,7 @@ public class AuthContoller {
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponseDto> register(
         @RequestBody RegisterRequestDto request
-    ) throws NotFoundException {
+    ) throws NotFoundException, WrongParametersException {
         return ResponseEntity.ok(authenticationService.register(request));
     }
 
@@ -43,8 +44,8 @@ public class AuthContoller {
     }
 
     @GetMapping("/hello")
-    public String getMethodName() {
-        return new String("hey");
+    public String getMethodName() throws NotFoundException {
+        throw new NotFoundException("nothing", "Lo que me cuelga de aqui");
     }
     
 

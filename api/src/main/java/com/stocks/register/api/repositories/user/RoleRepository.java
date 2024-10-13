@@ -1,4 +1,4 @@
-package com.stocks.register.api.repositories;
+package com.stocks.register.api.repositories.user;
 
 import java.util.Optional;
 

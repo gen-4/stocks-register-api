@@ -36,8 +36,12 @@ public class SecurityConfiguration {
                 authorizeHttpRequests
                     .requestMatchers("/auth/**")
                     .permitAll()
+
+                    .requestMatchers("/admin/**")
+                    .hasAuthority("ADMIN")
+
                     .anyRequest()
-                    .authenticated()
+                    .hasAuthority("USER")
             )
             .sessionManagement(sessionManagement ->
                 sessionManagement
