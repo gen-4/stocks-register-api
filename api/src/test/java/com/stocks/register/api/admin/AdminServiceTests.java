@@ -18,7 +18,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
-import com.stocks.register.api.dtos.user.UserDto;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.TryingToBanAdminException;
 import com.stocks.register.api.models.user.Role;
@@ -103,7 +102,7 @@ class AdminServiceTests {
 
     @Test
     public void getAllUsers() {
-        List<UserDto> users = adminService.getAll();
+        List<User> users = adminService.getAll();
 
         assertFalse(users.isEmpty());
         assertEquals(2, users.size());
@@ -112,7 +111,7 @@ class AdminServiceTests {
     @Test
     public void getAllUsersEmptyUsers() {
         userRepository.deleteAll();
-        List<UserDto> users = adminService.getAll();
+        List<User> users = adminService.getAll();
 
         assertTrue(users.isEmpty());
     }

@@ -4,6 +4,7 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.List;
 
+import org.springframework.data.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -15,9 +16,6 @@ import org.springframework.stereotype.Service;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.WrongParametersException;
 import com.stocks.register.api.configuration.JwtService;
-import com.stocks.register.api.dtos.auth.AuthenticationRequestDto;
-import com.stocks.register.api.dtos.auth.AuthenticationResponseDto;
-import com.stocks.register.api.dtos.auth.RegisterRequestDto;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.RoleOptions;
 import com.stocks.register.api.models.user.User;
@@ -48,7 +46,7 @@ public class AuthenticationService {
     @Autowired
     private final AuthenticationManager authenticationManager;
 
-    public AuthenticationResponseDto register(RegisterRequestDto request) 
+    public Pair<User, String> register(String email, String username, String password) 
         throws NotFoundException, WrongParametersException {
         User user;
         Optional<Role> userRole = roleRepository.findByRole(RoleOptions.USER);
@@ -58,9 +56,9 @@ public class AuthenticationService {
 
         try {
             user = User.builder()
-                .username(request.getUsername())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
+                .username(username)
+                .email(email)
+                .password(passwordEncoder.encode(password))
                 .registerDate(new Timestamp(System.currentTimeMillis()))
                 .roles(List.of(userRole.get()))
                 .build();
@@ -77,13 +75,11 @@ public class AuthenticationService {
 
         String token = jwtService.generateToken(user);
         
-        return AuthenticationResponseDto.builder()
-            .token(token)
-            .build();
+        return Pair.of(user, token);
     }
 
-    public AuthenticationResponseDto login(AuthenticationRequestDto request) throws NotFoundException, WrongParametersException {
-        String email = request.getEmail();
+    public Pair<User, String> login(String email, String password) 
+        throws NotFoundException, WrongParametersException {
         Optional<User> optionalUser;
         User user;
         String token;
@@ -92,7 +88,7 @@ public class AuthenticationService {
             authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                     email,
-                    request.getPassword()
+                    password
                 )
             );
         } catch (BadCredentialsException e) {
@@ -111,9 +107,17 @@ public class AuthenticationService {
         token = jwtService.generateToken(user);
 
 
-        return AuthenticationResponseDto.builder()
-            .token(token)
-            .build();
+        return Pair.of(user, token);
     }
+
+    public User loginWithToken(long userId)
+        throws NotFoundException {
+            Optional<User> optionalUser = userRepository.findById(userId);
+            if (!optionalUser.isPresent()) {
+                throw new NotFoundException("User", "id");
+            }
+
+            return optionalUser.get();
+        }
 
 }

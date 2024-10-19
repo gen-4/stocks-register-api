@@ -51,9 +51,12 @@ class AuthUserTests {
 	private static final String testUserPassword = "1234test";
 	private static final String testUserUsername = "testuser";
 
+	private long userUserId;
 	private static final String userEmail = "user@example.com";
 	private static final String userPassword = "1234user";
 	private static final String userUsername = "user";
+
+	private static final long UNEXISTENT_ID = -1;
 
 	@BeforeAll
 	void checkTestEnv() {
@@ -75,7 +78,8 @@ class AuthUserTests {
 			.roles(List.of(userRole))
 			.build();
 
-		userRepository.save(userUser);
+		User createdUser = userRepository.save(userUser);
+		userUserId = createdUser.getId();
 	}
 
 	@AfterEach
@@ -86,11 +90,10 @@ class AuthUserTests {
 
 	@Test
 	void registerUserDoesNotThrowAnyExceptions() throws NotFoundException, WrongParametersException {
-		assertDoesNotThrow(() -> authenticationService.register(RegisterRequestDto.builder()
-			.email(testUserEmail)
-			.password(testUserPassword)
-			.username(testUserUsername)
-			.build()
+		assertDoesNotThrow(() -> authenticationService.register(
+			testUserEmail, 
+			testUserUsername, 
+			testUserPassword
 		));
 	}
 
@@ -99,82 +102,54 @@ class AuthUserTests {
 		userRepository.deleteAll();
 		roleRepository.deleteAll();
 
-		assertThrows(NotFoundException.class, () -> authenticationService.register(RegisterRequestDto.builder()
-			.email(testUserEmail)
-			.password(testUserPassword)
-			.username(testUserUsername)
-			.build()
+		assertThrows(NotFoundException.class, () -> authenticationService.register(
+			testUserEmail, 
+			testUserUsername, 
+			testUserPassword
 		));
 	}
 
 	@Test
-	void registerUserThrowsWrongParametersExceptionUsernameMissing() throws NotFoundException, WrongParametersException {
-		assertThrows(WrongParametersException.class, () -> authenticationService.register(RegisterRequestDto.builder()
-			.email(testUserEmail)
-			.password(testUserPassword)
-			.build()
-		));
-	}
-
-	@Test
-	void registerUserThrowsWrongParametersExceptionPasswordMissing() throws NotFoundException, WrongParametersException {
-		assertThrows(WrongParametersException.class, () -> authenticationService.register(RegisterRequestDto.builder()
-			.email(testUserEmail)
-			.username(testUserUsername)
-			.build()
-		));
-	}
-
-	@Test
-	void registerUserThrowsWrongParametersExceptionEmailMissing() throws NotFoundException, WrongParametersException {
-		assertThrows(WrongParametersException.class, () -> authenticationService.register(RegisterRequestDto.builder()
-			.password(testUserPassword)
-			.username(testUserUsername)
-			.build()
+	void registerUserThrowsWrongParametersException() throws NotFoundException, WrongParametersException {
+		assertThrows(WrongParametersException.class, () -> authenticationService.register(
+			userEmail, 
+			userUsername, 
+			userPassword
 		));
 	}
 
 	@Test
 	void userLoginDoesNotThrowAnyException() throws NotFoundException {
-		assertDoesNotThrow(() -> authenticationService.login(AuthenticationRequestDto.builder()
-			.email(userEmail)
-			.password(userPassword)
-			.build()
+		assertDoesNotThrow(() -> authenticationService.login(
+			userEmail,
+			userPassword
 		));
 	}
 
 	@Test
 	void userLoginThrowsWrongParamertsExceptionWrongEmail() throws WrongParametersException {
-		assertThrows(WrongParametersException.class, () ->authenticationService.login(AuthenticationRequestDto.builder()
-			.email(testUserEmail)
-			.password(userPassword)
-			.build()
-		));
-	}
-
-	@Test
-	void userLoginThrowsWrongParamertsExceptionMissingEmail() throws WrongParametersException {
-		assertThrows(WrongParametersException.class, () ->authenticationService.login(AuthenticationRequestDto.builder()
-			.password(userPassword)
-			.build()
+		assertThrows(WrongParametersException.class, () ->authenticationService.login(
+			testUserEmail,
+			userPassword
 		));
 	}
 
 	@Test
 	void userLoginThrowsWrongParamertsExceptionWrongPassword() throws WrongParametersException {
-		assertThrows(WrongParametersException.class, () ->authenticationService.login(AuthenticationRequestDto.builder()
-			.email(userEmail)
-			.password(testUserPassword)
-			.build()
+		assertThrows(WrongParametersException.class, () ->authenticationService.login(
+			userEmail,
+			testUserPassword
 		));
 	}
 
 	@Test
-	void userLoginThrowsWrongParamertsExceptionMissingPassword() throws WrongParametersException {
-		assertThrows(WrongParametersException.class, () ->authenticationService.login(AuthenticationRequestDto.builder()
-			.email(userEmail)
-			.build()
-		));
+	void userReauthenticate() throws NotFoundException {
+		assertDoesNotThrow(() ->authenticationService.loginWithToken(userUserId));
+	}
+
+	@Test
+	void userReauthenticateThrowsNotFoundExceptionUnexistentUser() throws NotFoundException {
+		assertThrows(NotFoundException.class, () ->authenticationService.loginWithToken(UNEXISTENT_ID));
 	}
 
 }

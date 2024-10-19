@@ -58,11 +58,7 @@ class AdminControllerTests {
     public void banUser() throws NotFoundException, TryingToBanAdminException {
 		long userId = 0;
 		when(adminService.banUser(userId))
-			.thenReturn(BanDto.builder()
-				.id(userId)
-				.message("User banned")
-				.build()
-			);
+			.thenReturn("User banned");
         ResponseEntity<BanDto> users = adminDashboardController.banUser(userId);
 
         assertTrue(users.getStatusCode().equals(HttpStatus.OK));

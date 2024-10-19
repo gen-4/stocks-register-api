@@ -16,7 +16,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
-import com.stocks.register.api.dtos.stock.StockDto;
 import com.stocks.register.api.models.stock.Stock;
 import com.stocks.register.api.repositories.stocks.StockRepository;
 import com.stocks.register.api.services.stock.StockService;
@@ -60,7 +59,7 @@ public class StockServiceTests {
 
     @Test
     public void getAllStocks() {
-        List<StockDto> stocks = stockService.getAll();
+        List<Stock> stocks = stockService.getAll();
 
         assertFalse(stocks.isEmpty());
         assertEquals(2, stocks.size());
@@ -69,7 +68,7 @@ public class StockServiceTests {
     @Test
     public void getAllStocksEmptyStocks() {
         stockRepository.deleteAll();
-        List<StockDto> stocks = stockService.getAll();
+        List<Stock> stocks = stockService.getAll();
 
         assertTrue(stocks.isEmpty());
     }

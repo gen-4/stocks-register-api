@@ -13,7 +13,6 @@ import com.stocks.register.api.exceptions.WrongParametersException;
 
 
 
-
 @ControllerAdvice
 public class GlobalExceptionHandler {
 
