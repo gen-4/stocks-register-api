@@ -2,8 +2,6 @@ package com.stocks.register.api.controllers;
 
 import java.util.stream.Collectors;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.util.Pair;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -17,9 +15,12 @@ import com.stocks.register.api.dtos.auth.RegisterRequestDto;
 import com.stocks.register.api.dtos.user.RoleDto;
 import com.stocks.register.api.dtos.user.UserDto;
 import com.stocks.register.api.exceptions.NotFoundException;
+import com.stocks.register.api.exceptions.UnauthorizedException;
 import com.stocks.register.api.exceptions.WrongParametersException;
 import com.stocks.register.api.models.user.User;
 import com.stocks.register.api.services.AuthenticationService;
+import com.stocks.register.api.configuration.JwtInfo;
+import com.stocks.register.api.configuration.JwtService;
 import com.stocks.register.api.dtos.auth.AuthenticationRequestDto;
 
 import lombok.RequiredArgsConstructor;
@@ -32,16 +33,15 @@ import lombok.RequiredArgsConstructor;
 @RequiredArgsConstructor
 public class AuthContoller {
 
-    @Autowired
     private final AuthenticationService authenticationService;
+
+    private final JwtService jwtService;
 
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponseDto> register(
         @RequestBody RegisterRequestDto request
     ) throws NotFoundException, WrongParametersException {
-        Pair<User, String> auth = authenticationService.register(request.getEmail(), request.getUsername(), request.getPassword());
-        User user = auth.getFirst();
-        String token = auth.getSecond();
+        User user = authenticationService.register(request.getEmail(), request.getUsername(), request.getPassword());
         
         return ResponseEntity.ok(AuthenticationResponseDto.builder()
             .user(UserDto.builder()
@@ -59,7 +59,7 @@ public class AuthContoller {
                 )
                 .build()
             )
-            .token(token)
+            .token(generateServiceToken(user))
             .build()
         );
     }
@@ -67,10 +67,8 @@ public class AuthContoller {
     @PostMapping("/login")
     public ResponseEntity<AuthenticationResponseDto> login(
         @RequestBody AuthenticationRequestDto request
-    ) throws WrongParametersException, NotFoundException {
-        Pair<User, String> auth = authenticationService.login(request.getEmail(), request.getPassword());
-        User user = auth.getFirst();
-        String token = auth.getSecond();
+    ) throws WrongParametersException, NotFoundException, UnauthorizedException {
+        User user = authenticationService.login(request.getEmail(), request.getPassword());
 
         return ResponseEntity.ok(AuthenticationResponseDto.builder()
             .user(UserDto.builder()
@@ -88,14 +86,14 @@ public class AuthContoller {
                 )
                 .build()
             )
-            .token(token)
+            .token(generateServiceToken(user))
             .build()
         );
     }
 
     @PostMapping("/login-with-token")
     public ResponseEntity<AuthenticationResponseDto> loginWithToken(@RequestAttribute long userId) 
-        throws NotFoundException {
+        throws NotFoundException, UnauthorizedException {
             User user = authenticationService.loginWithToken(userId);
 
             return ResponseEntity.ok(AuthenticationResponseDto.builder()
@@ -117,5 +115,22 @@ public class AuthContoller {
             .build()
         );
     }
+
+    private String generateServiceToken(User user) {
+
+		JwtInfo jwtInfo = JwtInfo.builder()
+            .userId(user.getId())
+            .username(user.getUsername())
+            .roles(user.getRoles().stream()
+                .map( role ->
+                    role.getRole()
+                )
+                .collect(Collectors.toList())
+            )
+            .build();
+
+		return jwtService.generateToken(jwtInfo);
+
+	}
 
 }

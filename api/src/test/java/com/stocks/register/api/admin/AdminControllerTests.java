@@ -18,10 +18,11 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import com.stocks.register.api.controllers.AdminDashboardController;
-import com.stocks.register.api.dtos.admin.BanDto;
+import com.stocks.register.api.dtos.admin.ActionDto;
+import com.stocks.register.api.dtos.admin.BanRequestDto;
 import com.stocks.register.api.dtos.user.UserDto;
 import com.stocks.register.api.exceptions.NotFoundException;
-import com.stocks.register.api.exceptions.TryingToBanAdminException;
+import com.stocks.register.api.exceptions.TryingToManageAdminException;
 import com.stocks.register.api.services.admin.AdminService;
 
 import lombok.RequiredArgsConstructor;
@@ -55,22 +56,32 @@ class AdminControllerTests {
     }
 
 	@Test
-    public void banUser() throws NotFoundException, TryingToBanAdminException {
+    public void banUser() throws NotFoundException, TryingToManageAdminException {
 		long userId = 0;
-		when(adminService.banUser(userId))
+		when(adminService.banUser(userId, true))
 			.thenReturn("User banned");
-        ResponseEntity<BanDto> users = adminDashboardController.banUser(userId);
+        ResponseEntity<ActionDto> users = adminDashboardController.banUser(
+			userId, 
+			BanRequestDto.builder()
+				.ban(true)
+				.build()
+		);
 
         assertTrue(users.getStatusCode().equals(HttpStatus.OK));
     }
 
 	@Test
-    public void banUserThrowsNotFoundException() throws NotFoundException, TryingToBanAdminException {
+    public void banUserThrowsNotFoundException() throws NotFoundException, TryingToManageAdminException {
 		long userId = 0;
-		when(adminService.banUser(userId))
+		when(adminService.banUser(userId, true))
 			.thenThrow(NotFoundException.class);
 
-        assertThrows(NotFoundException.class, () -> adminDashboardController.banUser(userId));
+        assertThrows(NotFoundException.class, () -> adminDashboardController.banUser(
+			userId,
+			BanRequestDto.builder()
+				.ban(true)
+				.build()
+		));
     }
 
 }

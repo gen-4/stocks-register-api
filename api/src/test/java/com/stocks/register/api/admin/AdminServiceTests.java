@@ -19,7 +19,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
 import com.stocks.register.api.exceptions.NotFoundException;
-import com.stocks.register.api.exceptions.TryingToBanAdminException;
+import com.stocks.register.api.exceptions.TryingToManageAdminException;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.RoleOptions;
 import com.stocks.register.api.models.user.User;
@@ -117,20 +117,20 @@ class AdminServiceTests {
     }
 
 	@Test
-    public void banUser() throws NotFoundException, TryingToBanAdminException {
-        adminService.banUser(userUser.getId());
+    public void banUser() throws NotFoundException, TryingToManageAdminException {
+        adminService.banUser(userUser.getId(), true);
 
         assertTrue(userRepository.findById(userUser.getId()).get().isBanned());
     }
 
 	@Test
-    public void banUserThrowsNotFoundException() throws NotFoundException, TryingToBanAdminException {
-        assertThrows(NotFoundException.class, () -> adminService.banUser(UNEXISTENT_ID));
+    public void banUserThrowsNotFoundException() throws NotFoundException, TryingToManageAdminException {
+        assertThrows(NotFoundException.class, () -> adminService.banUser(UNEXISTENT_ID, true));
     }
 
 	@Test
-    public void banUserThrowsTryingToBanAdminException() throws NotFoundException, TryingToBanAdminException {
-        assertThrows(TryingToBanAdminException.class, () -> adminService.banUser(adminUser.getId()));
+    public void banUserThrowsTryingToBanAdminException() throws NotFoundException, TryingToManageAdminException {
+        assertThrows(TryingToManageAdminException.class, () -> adminService.banUser(adminUser.getId(), true));
     }
 
 }

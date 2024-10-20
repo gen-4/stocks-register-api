@@ -1,14 +1,17 @@
 package com.stocks.register.api.configuration;
 
 import java.io.IOException;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.filter.OncePerRequestFilter;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.MediaType;
 import org.springframework.lang.NonNull;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.web.authentication.WebAuthenticationDetailsSource;
 import org.springframework.stereotype.Component;
 
 import jakarta.servlet.FilterChain;
@@ -16,9 +19,10 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import lombok.RequiredArgsConstructor;
-
 import com.stocks.register.api.models.user.User;
+import com.stocks.register.api.repositories.user.UserRepository;
+
+import lombok.RequiredArgsConstructor;
 
 import io.jsonwebtoken.ExpiredJwtException;
 import io.jsonwebtoken.JwtException;
@@ -34,7 +38,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
     private final JwtService jwtService;
 
-    private final UserService userDetailsService;
+    private final UserRepository UserRepository;
 
     @ExceptionHandler()
     @Override
@@ -43,10 +47,9 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         @NonNull HttpServletResponse response, 
         @NonNull FilterChain filterChain
     ) throws ServletException, IOException {
-        final String authHeader = request.getHeader("Authorization");
+
+        final String authHeader = request.getHeader(HttpHeaders.AUTHORIZATION);
         final String jwt;
-        final String email;
-        UsernamePasswordAuthenticationToken authToken;
 
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
@@ -54,26 +57,34 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
         jwt = authHeader.substring(7); // "Bearer " has 7 chars and we need the rest
         try {
-            email = jwtService.extractUserEmail(jwt);
+            JwtInfo info = jwtService.getInfo(jwt);
+            request.setAttribute("userId", info.getUserId());
+            request.setAttribute("token", jwt);
+            request.setAttribute("roles", info.getRoles());
 
-            if (email != null && SecurityContextHolder.getContext().getAuthentication() == null) {
-                User user = this.userDetailsService.loadUserByEmail(email);
+            Optional<User> user = UserRepository.findById(info.getUserId());
+            if (!user.isPresent()) {
+                handleException(response, "User could not be found", HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
 
-                request.setAttribute("userId", user.getId());
-                request.setAttribute("token", jwt);
-                request.setAttribute("roles", user.getAuthorities());
+            if (user.get().isBanned()) {
+                handleException(response, "User is banned", HttpServletResponse.SC_FORBIDDEN);
+                return;
+            }
 
-                if (jwtService.isTokenValid(jwt, user)) {
-                    authToken = new UsernamePasswordAuthenticationToken(
-                        user, 
-                        null,
-                        user.getAuthorities()
-                    );
-
-                    authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
-                    SecurityContextHolder.getContext().setAuthentication(authToken);
-                }
-            } 
+            SecurityContextHolder.getContext().setAuthentication(
+                new UsernamePasswordAuthenticationToken(
+                    info.getUsername(), 
+                    null,
+                    info.getRoles().stream()
+                        .map( role ->
+                            new SimpleGrantedAuthority("ROLE_" + role.name())
+                        )
+                        .collect(Collectors.toSet())
+                )
+            );
+            
         } catch (ExpiredJwtException e) {
             handleException(response, "Token has expired", HttpServletResponse.SC_FORBIDDEN);
             return;

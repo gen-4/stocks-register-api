@@ -4,18 +4,14 @@ import java.sql.Timestamp;
 import java.util.Optional;
 import java.util.List;
 
-import org.springframework.data.util.Pair;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.dao.DataIntegrityViolationException;
-import org.springframework.security.authentication.AuthenticationManager;
-import org.springframework.security.authentication.BadCredentialsException;
-import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import com.stocks.register.api.exceptions.NotFoundException;
+import com.stocks.register.api.exceptions.UnauthorizedException;
 import com.stocks.register.api.exceptions.WrongParametersException;
-import com.stocks.register.api.configuration.JwtService;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.RoleOptions;
 import com.stocks.register.api.models.user.User;
@@ -40,15 +36,10 @@ public class AuthenticationService {
     @Autowired
     private final PasswordEncoder passwordEncoder;
 
-    @Autowired
-    private final JwtService jwtService;
-
-    @Autowired
-    private final AuthenticationManager authenticationManager;
-
-    public Pair<User, String> register(String email, String username, String password) 
+    public User register(String email, String username, String password) 
         throws NotFoundException, WrongParametersException {
         User user;
+        Timestamp now = new Timestamp(System.currentTimeMillis());
         Optional<Role> userRole = roleRepository.findByRole(RoleOptions.USER);
         if (!userRole.isPresent()) {
             throw new NotFoundException("Role", RoleOptions.USER.name());
@@ -59,7 +50,10 @@ public class AuthenticationService {
                 .username(username)
                 .email(email)
                 .password(passwordEncoder.encode(password))
-                .registerDate(new Timestamp(System.currentTimeMillis()))
+                .registerDate(now)
+                .lastLogin(now)
+                .isBanned(false)
+                .isEnabled(true)
                 .roles(List.of(userRole.get()))
                 .build();
         
@@ -72,28 +66,14 @@ public class AuthenticationService {
         } catch (NullPointerException e) {
             throw new WrongParametersException("User Register Request");
         }
-
-        String token = jwtService.generateToken(user);
         
-        return Pair.of(user, token);
+        return user;
     }
 
-    public Pair<User, String> login(String email, String password) 
-        throws NotFoundException, WrongParametersException {
+    public User login(String email, String password) 
+        throws NotFoundException, WrongParametersException, UnauthorizedException {
         Optional<User> optionalUser;
         User user;
-        String token;
-
-        try {
-            authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                    email,
-                    password
-                )
-            );
-        } catch (BadCredentialsException e) {
-            throw new WrongParametersException("User Authentication Request");
-        }
 
         optionalUser = userRepository.findByEmail(email);
         if (!optionalUser.isPresent()) {
@@ -101,23 +81,35 @@ public class AuthenticationService {
         }
         
         user = optionalUser.get();
+
+        if (!passwordEncoder.matches(password, user.getPassword()) || user.isBanned()) {
+            throw new UnauthorizedException(email);
+        }
+
         user.setLastLogin(new Timestamp(System.currentTimeMillis()));
         userRepository.save(user);
 
-        token = jwtService.generateToken(user);
-
-
-        return Pair.of(user, token);
+        return user;
     }
 
     public User loginWithToken(long userId)
-        throws NotFoundException {
-            Optional<User> optionalUser = userRepository.findById(userId);
-            if (!optionalUser.isPresent()) {
-                throw new NotFoundException("User", "id");
-            }
+        throws NotFoundException, UnauthorizedException {
 
-            return optionalUser.get();
+        Optional<User> optionalUser = userRepository.findById(userId);
+        if (!optionalUser.isPresent()) {
+            throw new NotFoundException("User", "id");
         }
+
+        User user = optionalUser.get();
+        
+        if (user.isBanned()) {
+            throw new UnauthorizedException(user.getEmail());
+        }
+
+        user.setLastLogin(new Timestamp(System.currentTimeMillis()));
+        userRepository.save(user);
+
+        return user;
+    }    
 
 }

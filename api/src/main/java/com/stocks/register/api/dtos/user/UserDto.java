@@ -17,6 +17,8 @@ public class UserDto {
     private String email;
     private Timestamp registerDate;
     private Timestamp lastLogin;
+    private boolean isBanned;
+    private boolean isEnabled;
     private List<RoleDto> roles;
     
 }

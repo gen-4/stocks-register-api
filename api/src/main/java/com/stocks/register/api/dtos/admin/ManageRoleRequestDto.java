@@ -9,9 +9,6 @@ import lombok.NoArgsConstructor;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class BanDto {
-
-    private long id;
-    private String message;
-
+public class ManageRoleRequestDto {
+    private long roleId;
 }

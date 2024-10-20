@@ -17,8 +17,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.core.env.Environment;
 
-import com.stocks.register.api.dtos.auth.AuthenticationRequestDto;
-import com.stocks.register.api.dtos.auth.RegisterRequestDto;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.WrongParametersException;
 import com.stocks.register.api.models.user.Role;
