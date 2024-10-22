@@ -16,7 +16,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.stocks.register.api.controllers.StockController;
+import com.stocks.register.api.controllers.StocksController;
 import com.stocks.register.api.dtos.stock.StockDto;
 import com.stocks.register.api.services.stock.StockService;
 
@@ -31,7 +31,7 @@ public class StockControllerTests {
 	private Environment env;
 
     @Autowired
-    private StockController stockController;
+    private StocksController stockController;
     
     @MockBean
     private StockService stockService;

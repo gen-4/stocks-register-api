@@ -8,9 +8,11 @@ import org.springframework.stereotype.Service;
 import com.stocks.register.api.exceptions.ActionFailedException;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.TryingToManageAdminException;
+import com.stocks.register.api.models.stock.StockRequest;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.RoleOptions;
 import com.stocks.register.api.models.user.User;
+import com.stocks.register.api.repositories.stocks.StockRequestRepository;
 import com.stocks.register.api.repositories.user.RoleRepository;
 import com.stocks.register.api.repositories.user.UserRepository;
 
@@ -26,6 +28,7 @@ public class AdminServiceImpl implements AdminService {
 
     private final UserRepository userRepository;
     private final RoleRepository roleRepository;
+    private final StockRequestRepository stockRequestRepository;
 
     @Override
     public List<User> getAll() {
@@ -100,6 +103,11 @@ public class AdminServiceImpl implements AdminService {
         userRepository.save(user);
 
         return "User[" + user.getUsername() + "] role " + role.get().getRole().name() + " " + actionStr;
+    }
+
+    @Override
+    public List<StockRequest> getStockRequests() {
+        return stockRequestRepository.findAll();
     }
 
 }

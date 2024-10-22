@@ -17,6 +17,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import com.stocks.register.api.dtos.admin.ActionDto;
 import com.stocks.register.api.dtos.admin.BanRequestDto;
 import com.stocks.register.api.dtos.admin.ManageRoleRequestDto;
+import com.stocks.register.api.dtos.stock.StockRequestResponseDto;
 import com.stocks.register.api.dtos.user.RoleDto;
 import com.stocks.register.api.dtos.user.UserDto;
 import com.stocks.register.api.exceptions.ActionFailedException;
@@ -32,11 +33,12 @@ import lombok.RequiredArgsConstructor;
 
 
 
+
 @RestController
 @CrossOrigin
 @RequestMapping("/admin")
 @RequiredArgsConstructor
-public class AdminDashboardController {
+public class AdminController {
 
     private final AdminService adminService;
 
@@ -125,5 +127,22 @@ public class AdminDashboardController {
             .build()
         );
     }  
+
+    @GetMapping("/stocks/requests")
+    public ResponseEntity<List<StockRequestResponseDto>> getStockRequests() {
+        return ResponseEntity.ok(
+            adminService.getStockRequests().stream().map( request ->
+                StockRequestResponseDto.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .status(request.getStatus())
+                .registerDate(request.getRegisterDate())
+                .aprovalDate(request.getAprovalDate())
+                .build()
+            )
+            .collect(Collectors.toList())
+        );
+    }
+    
 
 }

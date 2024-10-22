@@ -17,7 +17,7 @@ import org.springframework.core.env.Environment;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
-import com.stocks.register.api.controllers.AdminDashboardController;
+import com.stocks.register.api.controllers.AdminController;
 import com.stocks.register.api.dtos.admin.ActionDto;
 import com.stocks.register.api.dtos.admin.BanRequestDto;
 import com.stocks.register.api.dtos.user.UserDto;
@@ -36,7 +36,7 @@ class AdminControllerTests {
 	private Environment env;
 
 	@Autowired
-	private AdminDashboardController adminDashboardController;
+	private AdminController adminDashboardController;
 
 	@MockBean
     private AdminService adminService;

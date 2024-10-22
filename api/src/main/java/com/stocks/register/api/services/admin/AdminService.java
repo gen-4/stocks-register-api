@@ -5,6 +5,7 @@ import java.util.List;
 import com.stocks.register.api.exceptions.ActionFailedException;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.TryingToManageAdminException;
+import com.stocks.register.api.models.stock.StockRequest;
 import com.stocks.register.api.models.user.Role;
 import com.stocks.register.api.models.user.User;
 
@@ -23,5 +24,7 @@ public interface AdminService {
 
     public String manageRole(long userId, long roleId, String action) 
         throws NotFoundException, TryingToManageAdminException, ActionFailedException;
+
+    public List<StockRequest> getStockRequests();
     
 }
