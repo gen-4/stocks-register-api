@@ -9,6 +9,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import com.stocks.register.api.exceptions.DuplicatedEntityException;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.UnauthorizedException;
 import com.stocks.register.api.exceptions.WrongParametersException;
@@ -37,7 +38,7 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
 
     public User register(String email, String username, String password) 
-        throws NotFoundException, WrongParametersException {
+        throws NotFoundException, WrongParametersException, DuplicatedEntityException {
         User user;
         Timestamp now = new Timestamp(System.currentTimeMillis());
         Optional<Role> userRole = roleRepository.findByRole(RoleOptions.USER);
@@ -60,7 +61,7 @@ public class AuthenticationService {
             userRepository.save(user);
             
         } catch (DataIntegrityViolationException e) {
-            throw new WrongParametersException("User Register Request");
+            throw new DuplicatedEntityException("User Register Request");
         } catch (IllegalArgumentException e) {
             throw new WrongParametersException("User Register Request");
         } catch (NullPointerException e) {

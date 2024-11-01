@@ -2,9 +2,11 @@ package com.stocks.register.api.services.stock;
 
 import java.util.Date;
 import java.util.List;
+import java.util.Optional;
 
 import org.springframework.stereotype.Service;
 
+import com.stocks.register.api.exceptions.DuplicatedEntityException;
 import com.stocks.register.api.models.stock.RequestStatus;
 import com.stocks.register.api.models.stock.Stock;
 import com.stocks.register.api.models.stock.StockRequest;
@@ -30,7 +32,12 @@ public class StockServiceImpl implements StockService {
     }
 
     @Override
-    public StockRequest requestStock(String name, long userId) {
+    public StockRequest requestStock(String name, long userId) throws DuplicatedEntityException {
+        Optional<StockRequest> optionalReq = stockRequestRepository.findById(name);
+        if (optionalReq.isPresent()) {
+            throw new DuplicatedEntityException("Stock Request");
+        }
+        
         StockRequest stockRequest = StockRequest.builder()
             .id(name)
             .name(name)

@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.GetMapping;
 import com.stocks.register.api.dtos.stock.StockDto;
 import com.stocks.register.api.dtos.stock.StockRequestDto;
 import com.stocks.register.api.dtos.stock.StockRequestResponseDto;
+import com.stocks.register.api.exceptions.DuplicatedEntityException;
 import com.stocks.register.api.models.stock.StockRequest;
 import com.stocks.register.api.services.stock.StockService;
 
@@ -50,7 +51,7 @@ public class StocksController {
     public ResponseEntity<StockRequestResponseDto> requestStock(
         @RequestBody StockRequestDto request,
         @RequestAttribute long userId
-    ) {
+    ) throws DuplicatedEntityException {
         StockRequest stockRequest = stockService.requestStock(request.getName(), userId);
 
         return ResponseEntity.ok(

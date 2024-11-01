@@ -14,6 +14,7 @@ import com.stocks.register.api.dtos.auth.AuthenticationResponseDto;
 import com.stocks.register.api.dtos.auth.RegisterRequestDto;
 import com.stocks.register.api.dtos.user.RoleDto;
 import com.stocks.register.api.dtos.user.UserDto;
+import com.stocks.register.api.exceptions.DuplicatedEntityException;
 import com.stocks.register.api.exceptions.NotFoundException;
 import com.stocks.register.api.exceptions.UnauthorizedException;
 import com.stocks.register.api.exceptions.WrongParametersException;
@@ -40,7 +41,7 @@ public class AuthContoller {
     @PostMapping("/register")
     public ResponseEntity<AuthenticationResponseDto> register(
         @RequestBody RegisterRequestDto request
-    ) throws NotFoundException, WrongParametersException {
+    ) throws NotFoundException, WrongParametersException, DuplicatedEntityException {
         User user = authenticationService.register(request.getEmail(), request.getUsername(), request.getPassword());
         
         return ResponseEntity.ok(AuthenticationResponseDto.builder()
